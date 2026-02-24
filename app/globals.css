@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  background-color: #f8f5f0;
+}
+
+body {
+  background-color: #f8f5f0;
+  color: #2b1b12;
+  font-family: var(--font-tajawal), sans-serif;
+  min-height: 100vh;
+}
+
+::selection {
+  background-color: #d4af37;
+  color: #ffffff;
+}

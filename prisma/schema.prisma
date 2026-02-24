@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  phone        String
+  role         String   @default("customer")
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  orders       Order[]
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  nameAr      String
+  slug        String    @unique
+  imageUrl    String?
+  description String?
+  isActive    Boolean   @default(true)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id            Int       @id @default(autoincrement())
+  nameAr        String
+  slug          String    @unique
+  description   String
+  fabric        String
+  color         String
+  price         Decimal   @db.Decimal(10, 2)
+  stock         Int
+  mainImage     String?
+  galleryImages Json?
+  isActive      Boolean   @default(true)
+  category      Category  @relation(fields: [categoryId], references: [id])
+  categoryId    Int
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  items         OrderItem[]
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  customerName  String
+  phone         String
+  country       String
+  city          String
+  address       String
+  notes         String?
+  paymentMethod String
+  paymentStatus String      @default("pending")
+  totalAmount   Decimal     @db.Decimal(10, 2)
+  status        String      @default("new")
+  userId        Int?
+  user          User?       @relation(fields: [userId], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  productName String  @default("")
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+}
+
+model ContactMessage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
