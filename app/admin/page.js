@@ -4,16 +4,33 @@ import { formatPrice } from "@/lib/utils";
 export const revalidate = 0;
 
 export default async function AdminDashboard() {
-  const [productsCount, categoriesCount, ordersCount, paidOrders] =
-    await Promise.all([
-      prisma.product.count(),
-      prisma.category.count(),
-      prisma.order.count(),
-      prisma.order.aggregate({
-        _sum: { totalAmount: true },
-        where: { paymentStatus: "paid" },
-      }),
-    ]);
+  let productsCount = 0;
+  let categoriesCount = 0;
+  let ordersCount = 0;
+  let paidRevenue = 0;
+
+  try {
+    const [productsTotal, categoriesTotal, ordersTotal, paidOrders] =
+      await Promise.all([
+        prisma.product.count(),
+        prisma.category.count(),
+        prisma.order.count(),
+        prisma.order.findMany({
+          where: { paymentStatus: "paid" },
+          select: { totalAmount: true },
+        }),
+      ]);
+
+    productsCount = productsTotal;
+    categoriesCount = categoriesTotal;
+    ordersCount = ordersTotal;
+    paidRevenue = paidOrders.reduce(
+      (sum, order) => sum + Number(order.totalAmount || 0),
+      0
+    );
+  } catch (error) {
+    console.error("Failed to load dashboard stats", error);
+  }
 
   const cards = [
     {
@@ -30,7 +47,7 @@ export default async function AdminDashboard() {
     },
     {
       label: "إيرادات مدفوعة",
-      value: formatPrice(paidOrders._sum.totalAmount || 0),
+      value: formatPrice(paidRevenue),
     },
   ];
 

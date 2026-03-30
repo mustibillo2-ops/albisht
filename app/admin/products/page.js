@@ -5,11 +5,24 @@ import AdminProductsTable from "./_components/AdminProductsTable";
 export const revalidate = 0;
 
 export default async function AdminProductsPage() {
-  const products = await prisma.product.findMany({
+  const rawProducts = await prisma.product.findMany({
     where: { isActive: true },
     include: { category: true },
     orderBy: { createdAt: "desc" },
   });
+  const products = rawProducts.map((product) => ({
+    ...product,
+    price: Number(product.price),
+    createdAt: product.createdAt.toISOString(),
+    updatedAt: product.updatedAt.toISOString(),
+    category: product.category
+      ? {
+          ...product.category,
+          createdAt: product.category.createdAt.toISOString(),
+          updatedAt: product.category.updatedAt.toISOString(),
+        }
+      : null,
+  }));
 
   return (
     <section className="space-y-6">
